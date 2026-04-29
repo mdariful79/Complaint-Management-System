@@ -6,8 +6,12 @@ namespace CMS.Web.Data.Models
     {
         [Key]
         public string CaseId { get; set; }
-        public string? CaseNo { get; set; }
+        public int? AutoCaseNo { get; set; }
+        public string? CaseName { get; set; }
         public string? CaseStatus { get; set; }
-        public DateTime? CreatedDate { get; set; }
+        public DateTime? CreatedDate { get; set; } = DateTime.Today.Date;
+
+        // Navigation
+        public CaseIntake? CaseIntake { get; set; }
     }
 }
