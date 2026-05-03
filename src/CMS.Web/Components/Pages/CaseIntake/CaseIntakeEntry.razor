@@ -1,0 +1,178 @@
+﻿@page "/CaseIntakeEntry"
+@rendermode InteractiveServer
+@using CMS.Web.Data
+@using CMS.Web.Data.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+
+<h3>Case Intake Entry</h3>
+
+<EditForm Model="@model" OnValidSubmit="AfterSave" FormName="CaseIntakeForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Is Anonymous</label><br />
+            <InputCheckbox class="form-check-input" @bind-Value="model.IsAnonymous" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Case Name</label>
+            <InputText class="form-control" @bind-Value="model.CaseName" />
+            <ValidationMessage For="@(() => model.CaseName)" />
+        </div>
+
+        @if (model.IsAnonymous == false)
+        {
+            <div class="col-md-4">
+                <label class="form-label">Complainant Name</label>
+                <InputText class="form-control" @bind-Value="model.ComplainantName" />
+                <ValidationMessage For="@(() => model.ComplainantName)" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Phone</label>
+                <InputText class="form-control" @bind-Value="model.ComplainantPhone" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Department</label>
+                <InputText class="form-control" @bind-Value="model.ComplainantDepartment" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Designation</label>
+                <InputText class="form-control" @bind-Value="model.ComplainantDesignation" />
+            </div>
+        }
+        <div class="col-md-4">
+            <label class="form-label">Complaint Category</label>
+            <InputSelect class="form-control" @bind-Value="model.ComplaintCategoryId">
+                <option value="">-- Select Complaint Category --</option>
+                @foreach (var item in ComplaintCategoryList)
+                {
+                    <option value="@item.ValueText">@item.DisplayText</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => model.ComplaintCategoryId)" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Complaint Name</label>
+            <InputText class="form-control" @bind-Value="model.ComplaintName" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Description</label>
+            <InputTextArea class="form-control" @bind-Value="model.ComplaintDescription" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Location</label>
+            <InputText class="form-control" @bind-Value="model.ComplaintLocation" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Urgency</label>
+            <InputSelect class="form-control" @bind-Value="model.UrgencyId">
+                <option value="">-- Select Urgency --</option>
+                @foreach (var item in UrgencyList)
+                {
+                    <option value="@item.ValueText">@item.DisplayText</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Date of Occurrence</label>
+            <InputDate class="form-control" @bind-Value="model.DateOfOccurrence" />
+        </div>
+
+    </div>
+
+    <br />
+
+    <button class="btn btn-primary" type="submit" disabled="@isSaving">
+        @(isSaving ? "Saving..." : "Submit")
+    </button>
+
+    @if (successMessage != null)
+    {
+        <div class="alert alert-success mt-3">@successMessage</div>
+    }
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger mt-3">@errorMessage</div>
+    }
+</EditForm>
+
+@code {
+   
+    private CaseIntake model = new();
+    private bool isSaving = false;
+    private string? successMessage;
+    private string? errorMessage;
+
+
+    private List<DropdownItem> ComplaintCategoryList = new();
+    private List<DropdownItem> UrgencyList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ComplaintCategoryList = await LoadComplaintCategories();
+        UrgencyList = new List<DropdownItem>
+        {
+            new DropdownItem { ValueText = "1", DisplayText = "Low" },
+            new DropdownItem { ValueText = "2", DisplayText = "Medium" },
+            new DropdownItem { ValueText = "3", DisplayText = "High" },
+            new DropdownItem { ValueText = "4", DisplayText = "Critical" }
+        };
+    }
+
+    private async Task AfterSave()
+    {
+        isSaving = true;
+        successMessage = null;
+
+        try
+        {
+            model.CaseIntakeId = Guid.NewGuid().ToString();
+            Db.Add(model);
+            await Db.SaveChangesAsync();
+
+            successMessage = "Case saved successfully!";
+            model = new CaseIntake();
+        }
+        catch (DbUpdateException ex)
+        {
+            
+            errorMessage = ex.InnerException?.Message ?? ex.Message;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+    private async Task<List<DropdownItem>> LoadComplaintCategories()
+    {
+        
+
+        return new List<DropdownItem>
+        {
+            new DropdownItem { ValueText = "1", DisplayText = "Harassment" },
+            new DropdownItem { ValueText = "2", DisplayText = "Fraud" },
+            new DropdownItem { ValueText = "3", DisplayText = "Misconduct" }
+        };
+    }
+
+    public class DropdownItem
+    {
+        public string ValueText { get; set; } = "";
+        public string DisplayText { get; set; } = "";
+    }
+    
+}

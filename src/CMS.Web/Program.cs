@@ -1,6 +1,7 @@
 using CMS.Web.Components;
 using CMS.Web.Components.Account;
 using CMS.Web.Data;
+using CMS.Web.Data.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+builder.Services.AddScoped<CaseIntake>();
 
 builder.Services.AddAuthentication(options =>
     {
